@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>페이지 환산 계산기</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f6fa;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .input-section {
+      margin-bottom: 2rem;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    select, input[type="number"] {
+      padding: 0.6rem;
+      font-size: 1rem;
+    }
+    input[type="number"] {
+      width: 180px;
+    }
+    .unit-label {
+      font-size: 1rem;
+      color: #333;
+    }
+    .result-box {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .result-box h3 {
+      margin-top: 0;
+    }
+    .note {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #555;
+      line-height: 1.6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6rem;
+      text-align: center;
+    }
+    th {
+      background-color: #e9f0f7;
+    }
+  </style>
+</head>
+<body>
+  <h2>페이지 환산 계산기</h2>
+
+  <div class="input-section">
+    <p>먼저 아래에서 기준 단위를 선택한 후, 해당 값을 입력하세요.</p>
+    <div class="input-row">
+      <label for="inputType" style="font-weight: bold;">기준 선택:</label>
+      <select id="inputType">
+        <option value="a4">A4 매수</option>
+        <option value="shinguk">신국판 쪽수</option>
+        <option value="manuscript">200자 원고지 매수</option>
+      </select>
+
+      <label for="inputValue" style="font-weight: bold;">값 입력:</label>
+      <input type="number" id="inputValue" placeholder="예: 100" min="0" />
+      <span class="unit-label" id="unitLabel">매</span>
+    </div>
+  </div>
+
+  <div class="result-box">
+    <h3>환산 결과</h3>
+    <div id="outputArea">
+      신국판: 계산 대기 중<br>
+      200자 원고지: 계산 대기 중<br>
+      A4: 계산 대기 중
+    </div>
+  </div>
+
+  <div class="note">
+    <p><strong>※ 기준 안내</strong></p>
+    <p>1. 이 계산기는 A4 문서 기준, 글자 크기 한글 11pt로 작성된 원고를 기준으로 합니다.</p>
+    <p>2. 신국판 페이지 수는 A4 매수에 2.67을 곱해 환산합니다.</p>
+    <p>3. 200자 원고지 매수는 A4 매수에 8을 곱해 환산합니다.</p>
+    <p>4. 위 공식은 텍스트 위주 원고에 한정되며, 그림, 표, 장식 요소가 많을 경우 더 늘어납니다.</p>
+    <p>5. 인디자인 편집 시 스타일 적용 방식에 따라 ±10~20% 차이 날 수 있습니다.</p>
+    <p>6. 최종 페이지 수는 반드시 시안 편집 후 PDF 기준으로 산정하는 것이 정확합니다.</p>
+  </div>
+
+  <p style="margin-top:2rem; font-weight:600;">&lt;표&gt; 페이지 환산 예시</p>
+  <table>
+    <thead>
+      <tr>
+        <th>A4</th>
+        <th>신국판</th>
+        <th>200자 원고지(매)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>75</td><td>200</td><td>600</td></tr>
+      <tr><td>100</td><td>270</td><td>800</td></tr>
+      <tr><td>120</td><td>320</td><td>960</td></tr>
+      <tr><td>150</td><td>400</td><td>1200</td></tr>
+      <tr><td>200</td><td>530</td><td>1600</td></tr>
+      <tr><td>250</td><td>670</td><td>2000</td></tr>
+      <tr><td>300</td><td>800</td><td>2400</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const inputType = document.getElementById("inputType");
+    const inputValue = document.getElementById("inputValue");
+    const outputArea = document.getElementById("outputArea");
+    const unitLabel = document.getElementById("unitLabel");
+
+    function round(val) {
+      return Math.round(val);
+    }
+
+    function updateUnit() {
+      const type = inputType.value;
+      if (type === "a4") unitLabel.textContent = "매";
+      else if (type === "shinguk") unitLabel.textContent = "쪽";
+      else if (type === "manuscript") unitLabel.textContent = "매";
+    }
+
+    function updateResults() {
+      const val = parseFloat(inputValue.value);
+      const type = inputType.value;
+
+      if (isNaN(val)) {
+        outputArea.innerHTML = "신국판: 계산 대기 중<br>200자 원고지: 계산 대기 중<br>A4: 계산 대기 중";
+        return;
+      }
+
+      let a4;
+      if (type === "a4") {
+        a4 = val;
+      } else if (type === "shinguk") {
+        a4 = val / 2.67;
+      } else if (type === "manuscript") {
+        a4 = val / 8;
+      }
+
+      const shinguk = round(a4 * 2.67);
+      const manuscript = round(a4 * 8);
+
+      outputArea.innerHTML =
+        `신국판: ${shinguk} 쪽<br>` +
+        `200자 원고지: ${manuscript} 매<br>` +
+        `A4: ${round(a4)} 매`;
+    }
+
+    inputType.addEventListener("change", () => {
+      updateUnit();
+      updateResults();
+    });
+    inputValue.addEventListener("input", updateResults);
+
+    // Initialize unit
+    updateUnit();
+  </script>
+</body>
+</html>
